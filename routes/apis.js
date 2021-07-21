@@ -13,19 +13,30 @@ router.get("/workouts", async (req, res) => {
   }
 });
 
-router.put("/workouts", async (req, res) => {
-  res.send("success");
+router.put("/workouts/:id", async (req, res) => {
+  try {
+    const addWorkout = await Workout.findOneAndUpdate({_id: req.params.id}, {$push: {exercises: req.body}}, {new: true, runValidators: true})
+    res.json(addWorkout);
+  } catch (err) {
+    res.status(500).json(err)
+  }
+
 });
 
 router.post("/workouts", async (req, res) => {
-  res.send("success");
+  try {
+    const newWorkout = await Workout.create(req.body)
+    res.json(newWorkout);
+  } catch (err) {
+    res.status(500).json(err)
+  }
 });
 
 router.get("/workouts/range", async (req, res) => {
   try {
     const workouts = await Workout.aggregate([
       { $addFields: { totalDuration: { $sum: "$exercises.duration" } } },
-    ]).sort({id: -1}).limit(7)
+    ]).sort({_id: -1}).limit(7)
     console.log(workouts);
     res.json(workouts);
   } catch (err) {
